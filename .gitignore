@@ -1,0 +1,25 @@
+# Java
+*.class
+target/
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Node
+node_modules/
+package-lock.json
+
+# UniApp
+unpackage/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
