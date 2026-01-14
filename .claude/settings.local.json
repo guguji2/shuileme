@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(git -C \"D:\\\\app\\\\slema\" status --short)",
+      "Bash(git -C \"D:\\\\app\\\\slema\" diff:*)",
+      "Bash(ls:*)"
+    ]
+  }
+}

@@ -59,6 +59,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 import api from '@/api/index.js'
 
 const username = ref('')
@@ -158,6 +159,11 @@ onMounted(() => {
     loadData()
     updateTime()
     timer = setInterval(updateTime, 1000)
+})
+
+// 每次页面显示时重新加载数据（从设置页返回时）
+onShow(() => {
+    loadData()
 })
 
 onUnmounted(() => {

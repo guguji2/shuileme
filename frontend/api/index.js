@@ -32,5 +32,21 @@ export default {
     },
     deleteContact(contactId) {
         return request.delete('/settings/contacts/' + contactId)
+    },
+
+    // 统计相关
+    getOverviewStats(userId) {
+        return request.get('/stats/overview/' + userId)
+    },
+    getWeeklyStats(userId) {
+        return request.get('/stats/weekly/' + userId)
+    },
+    getMonthlyStats(userId, year, month) {
+        let url = '/stats/monthly/' + userId
+        const params = []
+        if (year) params.push('year=' + year)
+        if (month) params.push('month=' + month)
+        if (params.length > 0) url += '?' + params.join('&')
+        return request.get(url)
     }
 }

@@ -7,6 +7,13 @@
             }
         },
         {
+            "path": "pages/stats/stats",
+            "style": {
+                "navigationBarTitleText": "数据统计",
+                "enablePullDownRefresh": true
+            }
+        },
+        {
             "path": "pages/settings/settings",
             "style": {
                 "navigationBarTitleText": "设置"
@@ -34,6 +41,10 @@
             {
                 "pagePath": "pages/index/index",
                 "text": "打卡"
+            },
+            {
+                "pagePath": "pages/stats/stats",
+                "text": "统计"
             },
             {
                 "pagePath": "pages/settings/settings",
