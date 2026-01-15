@@ -1,5 +1,5 @@
 // API 基础配置
-const BASE_URL = 'http://localhost:8080/api'
+const BASE_URL = 'http://101.33.210.146:8080/api'
 
 // 封装请求方法
 function request(url, method = 'GET', data = {}) {
