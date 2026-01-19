@@ -38,11 +38,23 @@
                 <view class="modal-form">
                     <view class="form-item">
                         <text class="form-label">姓名</text>
-                        <input class="form-input" v-model="contactName" placeholder="请输入姓名" />
+                        <input
+                            class="form-input"
+                            type="text"
+                            v-model="contactName"
+                            placeholder="请输入姓名"
+                            placeholder-class="placeholder"
+                        />
                     </view>
                     <view class="form-item">
                         <text class="form-label">邮箱</text>
-                        <input class="form-input" v-model="contactEmail" placeholder="请输入邮箱地址" />
+                        <input
+                            class="form-input"
+                            type="text"
+                            v-model="contactEmail"
+                            placeholder="请输入邮箱地址"
+                            placeholder-class="placeholder"
+                        />
                     </view>
                 </view>
                 <view class="modal-buttons">
@@ -242,10 +254,46 @@ async function deleteContact(contactId) {
     })
 }
 
-function handleLogout() {
-    uni.removeStorageSync('user')
-    uni.removeStorageSync('token')
-    uni.reLaunch({ url: '/pages/login/login' })
+async function handleLogout() {
+    const user = uni.getStorageSync('user')
+    if (!user || !user.id) {
+        uni.reLaunch({ url: '/pages/login/login' })
+        return
+    }
+
+    uni.showModal({
+        title: '确认退出',
+        content: '退出后将停止所有邮件提醒，确定要退出吗？',
+        success: async (res) => {
+            if (res.confirm) {
+                try {
+                    uni.showLoading({ title: '退出中...' })
+
+                    await api.logout({ userId: user.id })
+
+                    uni.hideLoading()
+                    uni.removeStorageSync('user')
+                    uni.removeStorageSync('token')
+
+                    uni.showToast({
+                        title: '已退出登录',
+                        icon: 'success'
+                    })
+
+                    setTimeout(() => {
+                        uni.reLaunch({ url: '/pages/login/login' })
+                    }, 1500)
+                } catch (e) {
+                    uni.hideLoading()
+                    console.error('退出失败', e)
+                    uni.showToast({
+                        title: '退出失败，请重试',
+                        icon: 'none'
+                    })
+                }
+            }
+        }
+    })
 }
 </script>
 
@@ -390,11 +438,21 @@ function handleLogout() {
 
 .form-input {
     width: 100%;
+    height: 80rpx;
     background: #f5f5f5;
-    padding: 20rpx;
+    padding: 0 20rpx;
     border-radius: 12rpx;
     font-size: 28rpx;
     box-sizing: border-box;
+    border: none;
+}
+
+.form-input::placeholder {
+    color: #999;
+}
+
+.placeholder {
+    color: #999;
 }
 
 .modal-buttons {

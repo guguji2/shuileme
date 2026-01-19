@@ -42,3 +42,22 @@ mvn spring-boot:run
 - POST `/api/settings/contacts` - 添加紧急联系人
 - GET `/api/settings/contacts/{userId}` - 获取紧急联系人列表
 - DELETE `/api/settings/contacts/{contactId}` - 删除紧急联系人
+
+
+
+###
+# 2. 停止并删除旧容器
+- docker stop slema-backend
+- docker rm slema-backend
+
+# 3. 重新创建容器（会读取新的 .env 文件）
+docker run -d \
+--name slema-backend \
+--restart unless-stopped \
+--env-file docker/.env \
+--network 1panel-network \
+-p 8080:8080 \
+slema-backend:latest
+
+# 4. 查看日志
+- docker logs -f slema-backend

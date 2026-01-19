@@ -80,6 +80,8 @@ const BASE_URL = 'http://localhost:8080/api'
 | username | VARCHAR(50) | 用户名 |
 | phone | VARCHAR(20) | 手机号（唯一） |
 | password | VARCHAR(100) | 密码 |
+| status | VARCHAR(20) | 状态（ACTIVE/INACTIVE） |
+| last_active_at | DATETIME | 最后活跃时间 |
 | created_at | DATETIME | 创建时间 |
 
 ### 紧急联系人表 (emergency_contact)

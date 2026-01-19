@@ -48,6 +48,17 @@ public class AuthService {
             throw new RuntimeException("密码错误");
         }
 
+        // 如果用户之前退出了登录，重新激活
+        if ("INACTIVE".equals(user.getStatus())) {
+            user.setStatus("ACTIVE");
+            user.setLastActiveAt(LocalDateTime.now());
+            userMapper.updateById(user);
+            System.out.println("用户重新登录，自动激活: " + user.getUsername() + " (ID: " + user.getId() + ")");
+        }
+
+        user.setLastActiveAt(LocalDateTime.now());
+        userMapper.updateById(user);
+
         return jwtUtil.generateToken(user.getId(), user.getUsername());
     }
 
@@ -55,5 +66,28 @@ public class AuthService {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getPhone, phone);
         return userMapper.selectOne(wrapper);
+    }
+
+    public void logout(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        user.setStatus("INACTIVE");
+        userMapper.updateById(user);
+        System.out.println("用户退出登录: " + user.getUsername() + " (ID: " + userId + ")");
+    }
+
+    public void reactivate(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        user.setStatus("ACTIVE");
+        user.setLastActiveAt(LocalDateTime.now());
+        userMapper.updateById(user);
+        System.out.println("用户重新激活: " + user.getUsername() + " (ID: " + userId + ")");
     }
 }

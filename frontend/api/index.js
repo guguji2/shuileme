@@ -8,6 +8,9 @@ export default {
     login(data) {
         return request.post('/auth/login', data)
     },
+    logout(data) {
+        return request.post('/auth/logout', data)
+    },
 
     // 打卡相关
     checkIn(data) {

@@ -50,4 +50,15 @@ public class AuthController {
             return ApiResponse.error(e.getMessage());
         }
     }
+
+    @PostMapping("/logout")
+    public ApiResponse<String> logout(@RequestBody Map<String, Long> request) {
+        try {
+            Long userId = request.get("userId");
+            authService.logout(userId);
+            return ApiResponse.success("退出登录成功");
+        } catch (Exception e) {
+            return ApiResponse.error(e.getMessage());
+        }
+    }
 }

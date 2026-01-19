@@ -43,18 +43,31 @@ public class SleepMonitorService {
 
     @Scheduled(fixedDelayString = "${app.monitor.check-interval}")
     public void monitorSleepCheckIn() {
+        System.out.println("=== 定时任务执行: 检查睡眠打卡 ===");
+        System.out.println("当前时间: " + LocalDateTime.now());
+
         LocalDateTime now = LocalDateTime.now();
         LocalTime currentTime = now.toLocalTime();
         LocalDate today = now.toLocalDate();
 
         LambdaQueryWrapper<SleepSetting> settingWrapper = new LambdaQueryWrapper<>();
         List<SleepSetting> settings = sleepSettingMapper.selectList(settingWrapper);
+        System.out.println("找到 " + settings.size() + " 条睡眠设置");
 
         for (SleepSetting setting : settings) {
             try {
+                // 获取用户信息并检查状态
+                User user = userMapper.selectById(setting.getUserId());
+                if (user == null || !"ACTIVE".equals(user.getStatus())) {
+                    System.out.println("用户ID: " + setting.getUserId() + " → 用户不存在或已退出登录，跳过");
+                    continue;
+                }
+
                 LocalTime deadline = LocalTime.parse(setting.getDeadlineTime());
+                System.out.println("用户ID: " + setting.getUserId() + ", 截止时间: " + deadline + ", 当前时间: " + currentTime);
 
                 if (currentTime.isAfter(deadline)) {
+                    System.out.println("  → 已超时，检查是否打卡");
                     LambdaQueryWrapper<CheckIn> checkInWrapper = new LambdaQueryWrapper<>();
                     checkInWrapper.eq(CheckIn::getUserId, setting.getUserId())
                                   .eq(CheckIn::getDate, today);
@@ -62,24 +75,36 @@ public class SleepMonitorService {
                     CheckIn checkIn = checkInMapper.selectOne(checkInWrapper);
 
                     if (checkIn == null) {
+                        System.out.println("  → 未打卡，检查是否已通知");
                         LambdaQueryWrapper<NotificationLog> logWrapper = new LambdaQueryWrapper<>();
                         logWrapper.eq(NotificationLog::getUserId, setting.getUserId())
                                  .eq(NotificationLog::getStatus, "SUCCESS")
                                  .apply("DATE(sent_time) = {0}", today);
 
                         long alreadyNotified = notificationLogMapper.selectCount(logWrapper);
+                        System.out.println("  → 今日已通知次数: " + alreadyNotified);
 
                         if (alreadyNotified == 0) {
-                            User user = userMapper.selectById(setting.getUserId());
+                            System.out.println("  → 准备发送邮件通知");
                             LambdaQueryWrapper<EmergencyContact> contactWrapper = new LambdaQueryWrapper<>();
                             contactWrapper.eq(EmergencyContact::getUserId, setting.getUserId());
                             List<EmergencyContact> contacts = emergencyContactMapper.selectList(contactWrapper);
 
+                            System.out.println("  → 找到 " + contacts.size() + " 个紧急联系人");
+
                             if (!contacts.isEmpty()) {
                                 emailService.sendMissedSleepNotification(user, contacts);
+                            } else {
+                                System.out.println("  → 无紧急联系人，跳过");
                             }
+                        } else {
+                            System.out.println("  → 今日已发送过通知，跳过");
                         }
+                    } else {
+                        System.out.println("  → 已打卡，无需通知");
                     }
+                } else {
+                    System.out.println("  → 未超时");
                 }
             } catch (Exception e) {
                 e.printStackTrace();

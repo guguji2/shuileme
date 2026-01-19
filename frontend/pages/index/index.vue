@@ -28,7 +28,7 @@
             <button
                 v-else
                 class="checkin-btn"
-                :class="{ disabled: !canCheckIn }"
+                :class="{ disabled: !canCheckIn, overdue: isOverdue }"
                 :disabled="!canCheckIn"
                 @click="handleCheckIn"
             >
@@ -52,7 +52,8 @@
 
         <view class="card info-card">
             <view class="info-title">💡 提示</view>
-            <text class="info-text">每晚 {{ deadlineTime || '23:00' }} 前记得打卡睡觉，否则会通知紧急联系人哦~</text>
+            <text class="info-text" v-if="deadlineTime">每晚 {{ deadlineTime }} 前记得打卡睡觉，否则会通知紧急联系人哦~</text>
+            <text class="info-text" v-else>请先在设置页面配置睡觉时间，设置后会在此显示提醒~</text>
         </view>
     </view>
 </template>
@@ -77,7 +78,29 @@ const checkInBtnText = computed(() => {
     if (!canCheckIn.value) {
         return '请先设置睡觉时间'
     }
+    if (isOverdue.value) {
+        return '已超时，快打卡'
+    }
     return '我要睡觉了'
+})
+
+// 判断是否超时未打卡（仅在当天超时后显示红色）
+const isOverdue = computed(() => {
+    if (!deadlineTime.value || hasCheckedIn.value) {
+        return false
+    }
+
+    // 直接比较当前时间和截止时间（格式：HH:mm）
+    const now = new Date()
+    const currentHours = now.getHours()
+    const currentMinutes = now.getMinutes()
+    const currentTimeInMinutes = currentHours * 60 + currentMinutes
+
+    const [deadlineHours, deadlineMinutes] = deadlineTime.value.split(':').map(Number)
+    const deadlineTimeInMinutes = deadlineHours * 60 + deadlineMinutes
+
+    // 当前时间超过截止时间即为超时（会在第二天零点自动恢复，因为是按每天的时间比较）
+    return currentTimeInMinutes > deadlineTimeInMinutes
 })
 
 let timer = null
@@ -270,6 +293,23 @@ onUnmounted(() => {
 .checkin-btn.disabled {
     background: #ccc;
     box-shadow: none;
+}
+
+.checkin-btn.overdue {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    box-shadow: 0 10rpx 40rpx rgba(255, 107, 107, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 10rpx 40rpx rgba(255, 107, 107, 0.5);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 10rpx 60rpx rgba(255, 107, 107, 0.8);
+    }
 }
 
 .section-title {
